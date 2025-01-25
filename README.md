@@ -11,3 +11,5 @@ examples:
 analytical M&A page
 ![alt text](https://github.com/popCoffee/fintech_M-A/blob/main/MnaDealPg.png)
 
+automates all fixed_income calculations that would have been done in excel:
+![alt text](https://github.com/popCoffee/fintech_M-A/blob/main/Fixed_income_analysis_excel.png)
