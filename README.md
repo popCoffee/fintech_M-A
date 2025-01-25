@@ -13,3 +13,6 @@ analytical M&A page
 
 automates all fixed_income calculations that would have been done in excel:
 ![alt text](https://github.com/popCoffee/fintech_M-A/blob/main/Fixed_income_analysis_excel.png)
+
+summarizes credit & fixed income 
+![alt text](https://github.com/popCoffee/fintech_M-A/blob/main/credit_pg.png)
