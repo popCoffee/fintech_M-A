@@ -16,3 +16,6 @@ automates all fixed_income calculations that would have been done in excel:
 
 summarizes credit & fixed income 
 ![alt text](https://github.com/popCoffee/fintech_M-A/blob/main/credit_pg.png)
+
+outputs a risk reporting file
+![alt text](https://github.com/popCoffee/fintech_M-A/blob/main/temp_hist_page_snapshot.png)
