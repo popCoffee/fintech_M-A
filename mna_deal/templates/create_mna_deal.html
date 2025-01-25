@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title_block %}
+Create M & A Deals
+{% endblock %}
+
+
+{% block content %}
+
+<div class="loader">
+    <div class="loader-inner ball-grid-pulse"></div>
+</div>
+<div class="app-content content"><br>
+    <div class="content-wrapper">
+        <div class="card">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-lg-4 col-md-1 col-sm-1"></div>
+                    <div class="col-lg-4 col-md-10 col-sm-10 alert alert-info alert-dismissible fade show" role="alert">
+                        <strong>Note:</strong> This will save to both <strong>Formulae Downside</strong> and <strong>MA Deals</strong> page.
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="col-lg-4 col-md-1 col-sm-1"></div>
+                </div>
+                <p class="h3 text-center text-bold-500">Add new M&A Deal</p>
+                <br>
+                <div class="container-fluid">
+                    <div class="row text-center">
+                        <div class="col-lg-4 col-md-1 col-sm-1"></div>
+                            <div class="col-lg-4 col-md-10 col-sm-10">
+                                <div id="create_mna_deal_present_msg_div">
+                                    <p id="create_mna_deal_present_msg"></p>
+                                </div>
+                            </div>
+                        <div class="col-lg-4 col-md-1 col-sm-1"></div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-lg-4 col-md-1 col-sm-1"></div>
+                            <div class="col-lg-4 col-md-10 col-sm-10">
+                                <div id="create_mna_deal_error_div">
+                                    <strong id="create_mna_deal_error"></strong>
+                                </div>
+                            </div>
+                        <div class="col-lg-4 col-md-1 col-sm-1"></div>
+                    </div>
+                    {% if form.errors %}
+                        {% for field in form %}
+                            {% if field.errors %}
+                                <div class="row text-center">
+                                    <div class="col-lg-4 col-md-1 col-sm-1"></div>
+                                    <div class="col-lg-4 col-md-10 col-sm-10">
+                                        <div class="alert alert-danger">
+                                            <strong>{{ field.label }}: {{ field.errors|escape }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-1 col-sm-1"></div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="col-lg-12">
+                            <div class="row">
+                                <div class="col-lg-1 col-md-1 col-sm-1"></div>
+                                <div class="col-lg-3 col-md-3 col-sm-3">
+                                    <small class="badge badge-default badge-dark">Action ID</small>
+                                    <strong><sup class="red">*</sup></strong>
+                                    <fieldset class="form-group position-relative">
+                                        <input type="text" name="action_id" class="form-control input-lg"
+                                            label_class="badge badge-default badge-dark" id="action_id"
+                                            placeholder="123456789" maxlength="20" required>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-3 pt-2">
+                                    <span class="badge badge-pill badge-primary p-1">Enter Action ID to fetch Bloomberg Data</span>
+                                </div>
+                                <div class="col-lg-5 col-md-5 col-sm-5 col-5 text-right pt-2"></div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="col-lg-1 col-md-1 col-sm-1"></div>
+                                {% for item in form %}
+                                    {% if item.field.widget.attrs.hide %}
+                                        <div class="col-lg-3 col-md-3 col-sm-3" style="display: none" id="div_{{ item.field.widget.attrs.id }}">
+                                    {% else %}
+                                    <div class="col-lg-3 col-md-3 col-sm-3" id="div_{{ item.field.widget.attrs.id }}">
+                                    {% endif %}
+                                        <small class="{{ item.field.widget.attrs.label_class }}">{{ item.label }}</small>
+                                        {% if item.field.required %}
+                                            <strong><sup class="red">*</sup></strong>
+                                        {% endif %}
+                                        {% if 'Border' in item.label %}
+                                        <fieldset class="form-group form-check position-relative">
+                                        {% else %}
+                                        <fieldset class="form-group position-relative">
+                                        {% endif %}
+                                            {{ item }}
+                                        </fieldset>
+                                    </div>
+                                    {% if forloop.counter|divisibleby:3 %}
+                                        </div>
+                                        </div>
+                                        <div class="col-lg-12">
+                                        <div class="row">
+                                        <div class="col-lg-1 col-md-1 col-sm-1"></div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="row">
+{#                            <div class="col-lg-6 col-md-6 col-sm-6 col-6 text-right">#}
+{#                                <button id='save_deal' type="submit" class="btn btn-primary">Save to DB</button>#}
+{#                            </div>#}   {# cant find a way to get two buttons under form to open tab and not open tab #}
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-6 text-right">
+                            <input type="submit" id='SaveNewDeal' name="list" value="Save Data" style="background-color:mediumpurple;color:white"> </div>
+{#                            <div class="col-lg-6 col-md-6 col-sm-6 col-6">#}
+{#                            <input type="submit" id='saveDealPage' name="list" value="Save and Open Deal Page"#}
+{#                                   style="background-color:mediumpurple;color:white"  > </div>#}
+{#                            <div class="col-lg-6 col-md-6 col-sm-6 col-6">#}
+{#                                <button id='SaveNewDeal' type="submit" class="btn btn-primary" >Save and Open Deal Page Tab</button>#}
+{#                            </div>#}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'app-assets/vendors/js/vendors.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js' %}"
+    type="text/javascript"></script>
+<script src="{% static 'app-assets/vendors/js/pickers/daterange/daterangepicker.js' %}" type="text/javascript"></script>
+<script src="{% static 'app-assets/vendors/js/loaders/loaders.css.js' %}"></script>
+<script src="{% static 'app-assets/js/core/create_mna_deal.js' %}" type="text/javascript"></script>
+
+{% endblock %}

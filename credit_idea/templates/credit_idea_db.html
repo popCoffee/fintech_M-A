@@ -1,0 +1,654 @@
+{% extends 'base.html' %}
+{% block title_block %}
+Credit Deals Upside Downside
+{% endblock %}
+{% load staticfiles %}
+
+{% block css_styles %}
+{{ block.super }}
+
+{% endblock %}
+
+{% block datatables_bootstrap_css %}
+{{ block.super }}
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="app-content content">
+  <div class="content-wrapper">
+
+    <div class="modal animated fadeInDown text-left" id="create_new_idea_modal" tabindex="-1" role="dialog"
+      aria-labelledby="modal_label" aria-hidden="true">
+      <div class="modal-xl modal-dialog" role="document">
+        <form id="submit_idea_edit_form" method="POST">
+          {% csrf_token %}
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title" id="modal_label">CREATE A NEW IDEA</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+              {% endfor %}
+              <input type="hidden" name="id" id="idea_id_to_edit" value="{{ id }}">
+              <div class="row">
+                {% for item in form.visible_fields %}
+                  <div class="col-lg-3 col-md-3 col-sm-3" id="div_{{ item.auto_id }}">
+                    <small class="{{ item.field.widget.attrs.label_class }}">{{ item.label }}</small>
+                    <fieldset class="form-group position-relative">
+                      {{ item }}
+                    </fieldset>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button id='close_mna_idea_modal' type="button" class="btn btn-danger btn-outline-secondary"
+                data-dismiss="modal">Close
+              </button>
+              <button type="submit" class="btn btn-outline-primary">Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal animated fadeInDown text-left in" id="view_idea_modal" tabindex="-1" role="dialog"
+      aria-labelledby="modal_label" aria-hidden="true">
+      <div class="modal-lg modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="modal_label">VIEW IDEA</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="col-lg-12">
+              <div class="row">
+                <small class="badge badge-default badge-success">My Idea</small>
+              </div>
+              <br>
+              <div class="row">
+                <div class="container" id="credit_idea_view_idea"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger btn-outline-secondary" data-dismiss="modal">Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-header">
+          <h4 class="card-title center">Merger Arb Credit</h4>
+          <a class="heading-elements-toggle"><i class="ft-ellipsis-h font-medium-3"></i></a>
+          <div class="heading-elements">
+            <button id='credit_idea_add_new_idea' class="btn btn-primary btn-sm" data-toggle="modal"
+              data-target="#create_new_idea_modal">
+              <i class="ft-plus white"></i> Add New Credit Idea
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+
+        <ul class="nav nav-pills nav-justified nav-underline no-hover-bg">
+          <li class="nav-item">
+            <a class="nav-link active" id="actionable" data-toggle="tab" aria-controls="tab_actionable"
+              href="#tab_actionable" aria-expanded="true">Actionable</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " id="actionable" data-toggle="tab" aria-controls="tab_non_actionable"
+              href="#tab_non_actionable" aria-expanded="true">Non Actionable</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " id="actionable" data-toggle="tab" aria-controls="tab_bank_debt" href="#tab_bank_debt"
+              aria-expanded="true">Bank Debt</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " id="actionable" data-toggle="tab" aria-controls="tab_convertible_only"
+              href="#tab_convertible_only" aria-expanded="true">Convertible Only</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " id="actionable" data-toggle="tab" aria-controls="tab_no_credit" href="#tab_no_credit"
+              aria-expanded="true">No Credit</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " id="actionable" data-toggle="tab" aria-controls="tab_uncategorized"
+              href="#tab_uncategorized" aria-expanded="true">Uncategorized</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " id="actionable" data-toggle="tab" aria-controls="tab_archive" href="#tab_archive"
+              aria-expanded="true">Archive</a>
+          </li>
+        </ul>
+
+
+        <div class="tab-content">
+          <div role="tabpanel" class="tab-pane active" id="tab_actionable">
+            <div class="table-responsive">
+              <table class="table table-bordered" id='credit_idea_table_actionable' style="font-size:12px;">
+                <thead>
+                  <tr id="row_{{ account.id }}">
+                    <th>Security Field</th>
+                    <th>ARB Tradegroup</th>
+                    <th>Est. Closing Date</th>
+                    <th>Last Price</th>
+                    <th>Upside Price</th>
+                    <th>Downside Price</th>
+                    <th>Unhedged Return</th>
+                    <th>Hedged Return</th>
+                    <th>Equity Return</th>
+                    <th>Equity Downside</th>
+                    <th>Options</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in credit_idea_list %}
+
+                    {% if row.deal_category == 'Actionable' %}
+                      {% if row.other_tradegroup and not row.flag_row %}
+                      <tr id="row_{{ row.id }}" class="table-info">
+                      {% elif row.flag_row %}
+                      <tr id="row_{{ row.id }}" class="table-danger">
+                      {% else %}
+                      <tr id="row_{{ row.id }}">
+                      {% endif %}
+                      {% if row.security_field %}
+                        <td id="security_field_{{ row.id }}">{{ row.security_field }}</td>
+                      {% elif row.other_tradegroup %}
+                        <td id="security_field_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                      {% else %}
+                        <td id="security_field_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                      {% endif %}
+                      {% if row.other_tradegroup %}
+                      <td id="arb_tradegroup_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                      {% else %}
+                      <td id="arb_tradegroup_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                      {% endif %}
+                      <td id="estimated_closing_date_{{ row.id }}"> {{ row.closing_date }}</td>
+                      <td id="last_price_{{ row.id }}"> {{ row.last_price }}</td>
+                      <td id="upside_price_{{ row.id }}"> {{ row.upside_price }}</td>
+                      <td id="downside_price_{{ row.id }}"> {{ row.downside_price }}</td>
+                      <td id="unhedged_return_{{ row.id }}"> {{ row.unhedged_return }}</td>
+                      <td id="hedged_return_{{ row.id }}"> {{ row.hedged_return }}</td>
+                      <td id="equity_return_{{ row.id }}"> {{ row.equity_return }}</td>
+                      <td id="equity_downside_{{ row.id }}"> {{ row.equity_downside }}</td>
+                      <td>
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="ft-settings"></i>
+                          </button>
+                          <ul class="dropdown-menu">
+                            <li>
+                              <a id="view_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item'
+                                target="_blank" href="{% url 'credit_idea:credit_idea_details' %}?credit_idea_id={{ row.id }}">
+                                <i class="ft-layers"></i> View</a>
+                            </li>
+                            <li>
+                              <a id="edit_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#">
+                                <i class="ft-edit-2"></i> Edit</a>
+                            </li>
+                            <li>
+                              <a id="delete_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item'
+                                href="#">
+                                <i class="ft-trash-2"></i> Delete</a>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endif %}
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="tab_non_actionable">
+            <table class="table table-bordered" id='credit_idea_table_non_actionable' style="font-size:12px;">
+              <thead>
+                <tr id="row_{{ account.id }}">
+                  <th>Security Field</th>
+                  <th>ARB Tradegroup</th>
+                  <th>Est. Closing Date</th>
+                  <th>Last Price</th>
+                  <th>Upside Price</th>
+                  <th>Downside Price</th>
+                  <th>Unhedged Return</th>
+                  <th>Hedged Return</th>
+                  <th>Equity Return</th>
+                  <th>Equity Downside</th>
+                  <th>Options</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in credit_idea_list %}
+                {% if row.deal_category == 'Not Actionable' %}
+                  {% if row.other_tradegroup and not row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-info">
+                  {% elif row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-danger">
+                  {% else %}
+                  <tr id="row_{{ row.id }}">
+                  {% endif %}
+                  {% if row.security_field %}
+                  <td id="security_field_{{ row.id }}">{{ row.security_field }}</td>
+                  {% elif row.other_tradegroup %}
+                  <td id="security_field_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="security_field_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  {% if row.other_tradegroup %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  <td id="estimated_closing_date_{{ row.id }}"> {{ row.closing_date }}</td>
+                  <td id="last_price_{{ row.id }}"> {{ row.last_price }}</td>
+                  <td id="upside_price_{{ row.id }}"> {{ row.upside_price }}</td>
+                  <td id="downside_price_{{ row.id }}"> {{ row.downside_price }}</td>
+                  <td id="unhedged_return_{{ row.id }}"> {{ row.unhedged_return }}</td>
+                  <td id="hedged_return_{{ row.id }}"> {{ row.hedged_return }}</td>
+                  <td id="equity_return_{{ row.id }}"> {{ row.equity_return }}</td>
+                  <td id="equity_downside_{{ row.id }}"> {{ row.equity_downside }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="ft-settings"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a id="view_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item'
+                            target="_blank"
+                            href="{% url 'credit_idea:credit_idea_details' %}?credit_idea_id={{ row.id }}"><i
+                              class="ft-layers"></i> View</a></li>
+                        <li><a id="edit_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-edit-2"></i> Edit</a></li>
+                        <li><a id="delete_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-trash-2"></i> Delete</a></li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="tab_bank_debt">
+            <table class="table table-bordered" id='credit_idea_table_bank_debt' style="font-size:12px;">
+              <thead>
+                <tr id="row_{{ account.id }}">
+                  <th>Security Field</th>
+                  <th>ARB Tradegroup</th>
+                  <th>Est. Closing Date</th>
+                  <th>Last Price</th>
+                  <th>Upside Price</th>
+                  <th>Downside Price</th>
+                  <th>Unhedged Return</th>
+                  <th>Hedged Return</th>
+                  <th>Equity Return</th>
+                  <th>Equity Downside</th>
+                  <th>Options</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in credit_idea_list %}
+                {% if row.deal_category == 'Bank Debt' %}
+                  {% if row.other_tradegroup and not row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-info">
+                  {% elif row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-danger">
+                  {% else %}
+                  <tr id="row_{{ row.id }}">
+                  {% endif %}
+                  {% if row.security_field %}
+                  <td id="security_field_{{ row.id }}">{{ row.security_field }}</td>
+                  {% elif row.other_tradegroup %}
+                  <td id="security_field_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="security_field_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  {% if row.other_tradegroup %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  <td id="estimated_closing_date_{{ row.id }}"> {{ row.closing_date }}</td>
+                  <td id="last_price_{{ row.id }}"> {{ row.last_price }}</td>
+                  <td id="upside_price_{{ row.id }}"> {{ row.upside_price }}</td>
+                  <td id="downside_price_{{ row.id }}"> {{ row.downside_price }}</td>
+                  <td id="unhedged_return_{{ row.id }}"> {{ row.unhedged_return }}</td>
+                  <td id="hedged_return_{{ row.id }}"> {{ row.hedged_return }}</td>
+                  <td id="equity_return_{{ row.id }}"> {{ row.equity_return }}</td>
+                  <td id="equity_downside_{{ row.id }}"> {{ row.equity_downside }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="ft-settings"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a id="view_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item'
+                            target="_blank"
+                            href="{% url 'credit_idea:credit_idea_details' %}?credit_idea_id={{ row.id }}"><i
+                              class="ft-layers"></i> View</a></li>
+                        <li><a id="edit_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-edit-2"></i> Edit</a></li>
+                        <li><a id="delete_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-trash-2"></i> Delete</a></li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="tab_convertible_only">
+            <table class="table table-bordered" id='credit_idea_table_convertible_only' style="font-size:12px;">
+              <thead>
+                <tr id="row_{{ account.id }}">
+                  <th>Security Field</th>
+                  <th>ARB Tradegroup</th>
+                  <th>Est. Closing Date</th>
+                  <th>Last Price</th>
+                  <th>Upside Price</th>
+                  <th>Downside Price</th>
+                  <th>Unhedged Return</th>
+                  <th>Hedged Return</th>
+                  <th>Equity Return</th>
+                  <th>Equity Downside</th>
+                  <th>Options</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in credit_idea_list %}
+                {% if row.deal_category == 'Convertible Only' %}
+                  {% if row.other_tradegroup and not row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-info">
+                  {% elif row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-danger">
+                  {% else %}
+                  <tr id="row_{{ row.id }}">
+                  {% endif %}
+                  {% if row.security_field %}
+                  <td id="security_field_{{ row.id }}">{{ row.security_field }}</td>
+                  {% elif row.other_tradegroup %}
+                  <td id="security_field_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="security_field_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  {% if row.other_tradegroup %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  <td id="estimated_closing_date_{{ row.id }}"> {{ row.closing_date }}</td>
+                  <td id="last_price_{{ row.id }}"> {{ row.last_price }}</td>
+                  <td id="upside_price_{{ row.id }}"> {{ row.upside_price }}</td>
+                  <td id="downside_price_{{ row.id }}"> {{ row.downside_price }}</td>
+                  <td id="unhedged_return_{{ row.id }}"> {{ row.unhedged_return }}</td>
+                  <td id="hedged_return_{{ row.id }}"> {{ row.hedged_return }}</td>
+                  <td id="equity_return_{{ row.id }}"> {{ row.equity_return }}</td>
+                  <td id="equity_downside_{{ row.id }}"> {{ row.equity_downside }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="ft-settings"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a id="view_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item'
+                            target="_blank"
+                            href="{% url 'credit_idea:credit_idea_details' %}?credit_idea_id={{ row.id }}"><i
+                              class="ft-layers"></i> View</a></li>
+                        <li><a id="edit_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-edit-2"></i> Edit</a></li>
+                        <li><a id="delete_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-trash-2"></i> Delete</a></li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="tab_no_credit">
+            <table class="table table-bordered" id='credit_idea_table_no_credit' style="font-size:12px;">
+              <thead>
+                <tr id="row_{{ account.id }}">
+                  <th>Security Field</th>
+                  <th>ARB Tradegroup</th>
+                  <th>Est. Closing Date</th>
+                  <th>Last Price</th>
+                  <th>Upside Price</th>
+                  <th>Downside Price</th>
+                  <th>Unhedged Return</th>
+                  <th>Hedged Return</th>
+                  <th>Equity Return</th>
+                  <th>Equity Downside</th>
+                  <th>Options</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in credit_idea_list %}
+                {% if row.deal_category == 'No Credit' %}
+                  {% if row.other_tradegroup and not row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-info">
+                  {% elif row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-danger">
+                  {% else %}
+                  <tr id="row_{{ row.id }}">
+                  {% endif %}
+                  {% if row.security_field %}
+                  <td id="security_field_{{ row.id }}">{{ row.security_field }}</td>
+                  {% elif row.other_tradegroup %}
+                  <td id="security_field_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="security_field_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  {% if row.other_tradegroup %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  <td id="estimated_closing_date_{{ row.id }}"> {{ row.closing_date }}</td>
+                  <td id="last_price_{{ row.id }}"> {{ row.last_price }}</td>
+                  <td id="upside_price_{{ row.id }}"> {{ row.upside_price }}</td>
+                  <td id="downside_price_{{ row.id }}"> {{ row.downside_price }}</td>
+                  <td id="unhedged_return_{{ row.id }}"> {{ row.unhedged_return }}</td>
+                  <td id="hedged_return_{{ row.id }}"> {{ row.hedged_return }}</td>
+                  <td id="equity_return_{{ row.id }}"> {{ row.equity_return }}</td>
+                  <td id="equity_downside_{{ row.id }}"> {{ row.equity_downside }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="ft-settings"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a id="view_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item'
+                            target="_blank"
+                            href="{% url 'credit_idea:credit_idea_details' %}?credit_idea_id={{ row.id }}"><i
+                              class="ft-layers"></i> View</a></li>
+                        <li><a id="edit_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-edit-2"></i> Edit</a></li>
+                        <li><a id="delete_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-trash-2"></i> Delete</a></li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="tab_archive">
+            <table class="table table-bordered" id='credit_idea_table_archive' style="font-size:12px;">
+              <thead>
+                <tr id="row_{{ account.id }}">
+                  <th>Security Field</th>
+                  <th>ARB Tradegroup</th>
+                  <th>Est. Closing Date</th>
+                  <th>Last Price</th>
+                  <th>Upside Price</th>
+                  <th>Downside Price</th>
+                  <th>Unhedged Return</th>
+                  <th>Hedged Return</th>
+                  <th>Equity Return</th>
+                  <th>Equity Downside</th>
+                  <th>Options</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in credit_idea_list %}
+                {% if row.deal_category == 'Archive' %}
+                  {% if row.other_tradegroup and not row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-info">
+                  {% elif row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-danger">
+                  {% else %}
+                  <tr id="row_{{ row.id }}">
+                  {% endif %}
+                  {% if row.security_field %}
+                  <td id="security_field_{{ row.id }}">{{ row.security_field }}</td>
+                  {% elif row.other_tradegroup %}
+                  <td id="security_field_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="security_field_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  {% if row.other_tradegroup %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  <td id="estimated_closing_date_{{ row.id }}"> {{ row.closing_date }}</td>
+                  <td id="last_price_{{ row.id }}"> {{ row.last_price }}</td>
+                  <td id="upside_price_{{ row.id }}"> {{ row.upside_price }}</td>
+                  <td id="downside_price_{{ row.id }}"> {{ row.downside_price }}</td>
+                  <td id="unhedged_return_{{ row.id }}"> {{ row.unhedged_return }}</td>
+                  <td id="hedged_return_{{ row.id }}"> {{ row.hedged_return }}</td>
+                  <td id="equity_return_{{ row.id }}"> {{ row.equity_return }}</td>
+                  <td id="equity_downside_{{ row.id }}"> {{ row.equity_downside }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="ft-settings"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a id="view_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item'
+                            target="_blank"
+                            href="{% url 'credit_idea:credit_idea_details' %}?credit_idea_id={{ row.id }}"><i
+                              class="ft-layers"></i> View</a></li>
+                        <li><a id="edit_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-edit-2"></i> Edit</a></li>
+                        <li><a id="delete_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-trash-2"></i> Delete</a></li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="tab_uncategorized">
+            <table class="table table-bordered" id='credit_idea_table_uncategorized' style="font-size:12px;">
+              <thead>
+                <tr id="row_{{ account.id }}">
+                  <th>Security Field</th>
+                  <th>ARB Tradegroup</th>
+                  <th>Est. Closing Date</th>
+                  <th>Last Price</th>
+                  <th>Upside Price</th>
+                  <th>Downside Price</th>
+                  <th>Unhedged Return</th>
+                  <th>Hedged Return</th>
+                  <th>Equity Return</th>
+                  <th>Equity Downside</th>
+                  <th>Options</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in credit_idea_list %}
+                {% if not row.deal_category %}
+                  {% if row.other_tradegroup and not row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-info">
+                  {% elif row.flag_row %}
+                  <tr id="row_{{ row.id }}" class="table-danger">
+                  {% else %}
+                  <tr id="row_{{ row.id }}">
+                  {% endif %}
+                  {% if row.security_field %}
+                  <td id="security_field_{{ row.id }}">{{ row.security_field }}</td>
+                  {% elif row.other_tradegroup %}
+                  <td id="security_field_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="security_field_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  {% if row.other_tradegroup %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.other_tradegroup }}</td>
+                  {% else %}
+                  <td id="arb_tradegroup_{{ row.id }}">{{ row.arb_tradegroup }}</td>
+                  {% endif %}
+                  <td id="estimated_closing_date_{{ row.id }}"> {{ row.closing_date }}</td>
+                  <td id="last_price_{{ row.id }}"> {{ row.last_price }}</td>
+                  <td id="upside_price_{{ row.id }}"> {{ row.upside_price }}</td>
+                  <td id="downside_price_{{ row.id }}"> {{ row.downside_price }}</td>
+                  <td id="unhedged_return_{{ row.id }}"> {{ row.unhedged_return }}</td>
+                  <td id="hedged_return_{{ row.id }}"> {{ row.hedged_return }}</td>
+                  <td id="equity_return_{{ row.id }}"> {{ row.equity_return }}</td>
+                  <td id="equity_downside_{{ row.id }}"> {{ row.equity_downside }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="ft-settings"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a id="view_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item'
+                            target="_blank"
+                            href="{% url 'credit_idea:credit_idea_details' %}?credit_idea_id={{ row.id }}"><i
+                              class="ft-layers"></i> View</a></li>
+                        <li><a id="edit_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-edit-2"></i> Edit</a></li>
+                        <li><a id="delete_idea_{{ row.id }}" data-value="{{ row.id }}" class='dropdown-item' href="#"><i
+                              class="ft-trash-2"></i> Delete</a></li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static 'app-assets/vendors/js/vendors.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'app-assets/js/core/credit_idea_db.js' %}" type="text/javascript"></script>
+
+
+{% endblock %}

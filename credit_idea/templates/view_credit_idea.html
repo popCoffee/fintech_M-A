@@ -1,0 +1,409 @@
+{% extends 'base.html' %}
+{% block title_block %}
+Merger Arb Credit
+{% endblock %}
+{% load staticfiles %}
+
+{% block css_styles %}
+{{ block.super }}
+
+{% endblock %}
+
+{% block datatables_bootstrap_css %}
+{{ block.super }}
+{% endblock %}
+
+{% block jexcel_scripts %}
+{{ block.super }}
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+<input type="hidden" value="{{ downsides_data }}" id="arb_downsides_data">
+<input type="hidden" value="{{ spread_data }}" id="spread_data">
+<input type="hidden" value="{{ rebate_data }}" id="rebate_data">
+<input type="hidden" value="{{ sizing_data }}" id="sizing_data">
+<input type="hidden" value="{{ scenario_data }}" id="scenario_data">
+<input type="hidden" value="{{ passive_data }}" id="passive_data">
+<input type="hidden" value="{{ bond_price_data }}" id="bond_price_data">
+<input type="hidden" value="{{ bond_information_data }}" id="bond_information_data">
+<input type="hidden" value="{{ estimated_liquidity_data }}" id="estimated_liquidity_data">
+<input type="hidden" value="{{ potential_outcomes_data }}" id="potential_outcomes_data">
+<input type="hidden" value="{{ passive_phase_arb_data }}" id="passive_phase_arb_data">
+<input type="hidden" value="{{ hedging_data }}" id="hedging_data">
+<input type="hidden" value="{{ scenario_wo_hedge_data }}" id="scenario_wo_hedge_data">
+<input type="hidden" value="{{ scenario_w_hedge_data }}" id="scenario_w_hedge_data">
+<input type="hidden" value="{{ scenario_comments_data }}" id="scenario_comments_data">
+<input type="hidden" value="{{ fx_local_to_base }}" id="fx_local_to_base">
+
+
+<div class="app-content content">
+  <div class="content-wrapper">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-header">
+          <div class="card-header card-head-inverse bg-dark">
+            <div class="row">
+              <div class="col-lg-4 col-md-4 col-sm-4 col-12 center">
+                <button class="btn btn-light btn-sm"><a target="_blank" class="black"
+                    href="{% url 'credit_idea:credit_idea_comments' %}?credit_idea_id={{ credit_idea_id }}">Comments
+                    Section</a></button>
+              </div>
+              <div class="col-lg-4 col-md-4 col-sm-4 col-12">
+                {% if other_tradegroup %}
+                  <h1 class="card-title text-white center">EQUITY ( {{ other_tradegroup }}
+                {% else %}
+                  <h1 class="card-title text-white center">EQUITY ( {{ arb_tradegroup }}
+                {% endif %}
+                {% if bbg_security_name %}
+                 | {{ bbg_security_name }} )</h1>
+                {% else %}
+                )</h1>
+                {% endif %}
+              </div>
+              <div class="col-lg-4 col-md-4 col-sm-4 col-12 center">
+                <input id='refresh_all_values_one' type="button" class="btn btn-primary btn-sm"
+                  value="Refresh All Values">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+          <div class="row">
+            <div class="col-lg-4 col-md-6 col-sm-12">
+              <div class="row">
+                <div class="table-responsive">
+                  <table id="arb_downsides_table" class="table table-hover table-bordered compact">
+                    <thead class="thead-light">
+                      <th colspan="2" class="center">UPSIDE / DOWNSIDE ASSUMPTIONS</th>
+                      <th colspan="1" class="center">{{ ccy }}</th>
+                      <th colspan="1" class="center">USD</th>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="row">
+                <div class="table-responsive">
+                  <table id="passive_table" class="table table-hover table-bordered compact">
+                    <thead class="thead-light">
+                      <th colspan="2" class="center">PASSIVE PHASE IN ARB</th>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-12">
+              <div class="table-responsive">
+                <table id="deal_terms_spread_table" class="table table-hover table-bordered compact">
+                  <thead class="thead-light">
+                    <th colspan="2" class="center">DEAL TERMS / SPREAD</th>
+                    <th colspan="1" class="center">{{ ccy }}</th>
+                    <th colspan="1" class="center">USD</th>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-12">
+              <div class="row">
+                <div class="table-responsive">
+                  <table id="rebate_levels_table" class="table table-hover table-bordered compact">
+                    <thead class="thead-light">
+                      <th class="center">REBATE LEVELS</th>
+                      <th class="center">ACQUIRER</th>
+                      <th class="center">TARGET</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="row">
+                <div class="table-responsive">
+                  <table id="sizing_table" class="table table-hover table-bordered compact">
+                    <thead class="thead-light">
+                      <th colspan="2" class="center">SIZING CONSIDERATIONS</th>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="table-responsive">
+              <table id="scenario_table" class="table table-hover table-bordered compact delete_equity_row_class">
+                <thead class="thead-light">
+                  <th class="center">Scenarios</th>
+                  <th class="center">Last Price<br>({{ ccy }})</th>
+                  <th class="center">Dividends<br>({{ ccy }})</th>
+                  <th class="center">Rebate<br>({{ ccy }})</th>
+                  <th class="center">Hedge<br>({{ ccy }})</th>
+                  <th class="center">Deal Value<br>({{ ccy }})</th>
+                  <th class="center">Spread<br>({{ ccy }})</th>
+                  <th class="center">Gross<br>%</th>
+                  <th class="center">Annual<br>%</th>
+                  <th class="center">Exp<br>Close</th>
+                  <th class="center">Days to<br>Close</th>
+                  <th class="center">USD to<br>Make</th>
+                  <th class="center">USD to<br>Lose</th>
+                  <th class="center">Implied<br>Probab.</th>
+                </thead>
+                <tbody id="scenario_table_tbody"></tbody>
+              </table>
+            </div>
+            <input id='addScenarioRow' type="submit" class="btn btn-primary" value="Add row">&nbsp;
+            <input id='deleteScenarioRow' type="submit" class="btn btn-primary" value="Delete Selected Row">
+          </div>
+
+          <div class="row">
+            <div class="container">
+              <div class="col-lg-12 col-md-12 col-sm-12 text-center">
+                <input id='save_equity_button' type="submit" class="btn btn-outline-primary"
+                  value="Save Equity Changes">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-header">
+          <div class="card-header card-head-inverse bg-dark">
+            <div class="row">
+              <div class="col-lg-4 col-md-4 col-sm-4 col-12 center">
+                <button class="btn btn-light btn-sm"><a target="_blank" class="black"
+                    href="{% url 'credit_idea:credit_idea_comments' %}?credit_idea_id={{ credit_idea_id }}">Comments
+                    Section</a></button>
+              </div>
+              <div class="col-lg-4 col-md-4 col-sm-4 col-12">
+                  {% if other_tradegroup %}
+                    <h1 class="card-title text-white center">CREDIT ( {{ other_tradegroup }}
+                  {% else %}
+                    <h1 class="card-title text-white center">CREDIT ( {{ arb_tradegroup }}
+                  {% endif %}
+                  {% if bbg_security_name %}
+                   | {{ bbg_security_name }} )</h1>
+                  {% else %}
+                  )</h1>
+                  {% endif %}
+                </div>
+              <div class="col-lg-4 col-md-4 col-sm-4 col-12 center">
+                <input id='refresh_all_values_two' type="button" class="btn btn-primary btn-sm"
+                  value="Refresh All Values">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+          <div class="row">
+
+            <div class="col-lg-4 col-md-6 col-sm-12">
+              <div class="table-responsive">
+                <table id="passive_phase_arb_table" class="table table-hover table-bordered compact">
+                  <thead class="thead-light">
+                    <th colspan="2" class="center">PASSIVE PHASE IN ARB</th>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-12">
+              <div class="table-responsive">
+                <table id="estimated_liquidity_table" class="table table-hover table-bordered compact">
+                  <thead class="thead-light">
+                    <th colspan="2" class="center">ESTIMATED LIQUIDITY</th>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-12">
+              <div class="table-responsive">
+                <table id="bond_information_table" class="table table-hover table-bordered compact">
+                  <thead class="thead-light">
+                    <th colspan="2" class="center">BOND INFORMATION</th>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="row">
+
+            <div class="col-lg-4 col-md-6 col-sm-12">
+              <div class="table-responsive">
+                <table id="potential_outcomes_table" class="table table-hover table-bordered compact">
+                  <thead class="thead-light">
+                    <th colspan="3" class="center">POTENTIAL OUTCOMES</th>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-12">
+              <div class="table-responsive">
+                <table id="hedging_table" class="table table-hover table-bordered compact">
+                  <thead class="thead-light">
+                    <th colspan="2" class="center">HEDGING</th>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-12">
+              <div class="table-responsive">
+                <table id="bond_price_table" class="table table-hover table-bordered compact">
+                  <thead class="thead-light">
+                    <th colspan="2" class="center">BOND PRICE</th>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="row">
+            <div class="table-responsive">
+              <table id="scenario_without_hedge_table"
+                class="table table-hover table-bordered compact delete_row_class">
+                <thead>
+                  <tr class="thead-light">
+                    <th colspan="2" class="center">SCENARIOS W/O HEDGE</th>
+                    <th colspan="8" class="center">BOND SPREAD LISTED IN BOND POINTS</th>
+                    <th colspan="4" class="center">RETURNS</th>
+                    <th colspan="6" class="center">PROFITS</th>
+                    <th colspan="2" class="center">UP / DOWN</th>
+                  </tr>
+                  <tr>
+
+                    <th class="center">Scenarios w/o HEDGE</th>
+                    <th class="center">Is Deal<br>Closed</th>
+                    <th class="center">Last<br>Price</th>
+                    <th class="center">Redemption<br>Type</th>
+                    <th class="center">Redemption</th>
+                    <th class="center">Carry<br>Earned</th>
+                    <th class="center">Rebate</th>
+                    <th class="center">Hedge</th>
+                    <th class="center">Deal<br>Value</th>
+                    <th class="center">Spread</th>
+                    <th class="center">Gross<br>%</th>
+                    <th class="center">Annual<br>%</th>
+                    <th class="center">Exp<br>Close</th>
+                    <th class="center">Days to<br>Close</th>
+                    <th class="center">Principal</th>
+                    <th class="center">Carry</th>
+                    <th class="center">Rebate</th>
+                    <th class="center">Hedge</th>
+                    <th class="center">Total</th>
+                    <th class="center">"DAY-OF"<br>BREAK</th>
+                    <th class="center scenario_without_hedge_upside_downside">Up</td>
+                    <th class="center scenario_without_hedge_upside_downside">Down</td>
+                  </tr>
+                </thead>
+                <tbody id="scenario_without_hedge_table_tbody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="table-responsive">
+              <table id="scenario_with_hedge_table" class="table table-hover table-bordered compact delete_row_class">
+                <thead>
+                  <tr class="thead-light">
+                    <th colspan="2" class="center">SCENARIOS W/ HEDGE</th>
+                    <th colspan="8" class="center">BOND SPREAD LISTED IN BOND POINTS</th>
+                    <th colspan="4" class="center">RETURNS</th>
+                    <th colspan="6" class="center">PROFITS</th>
+                  </tr>
+                  <tr>
+                    <th class="center">Scenarios w/ HEDGE</th>
+                    <th class="center">Is Deal<br>Closed</th>
+                    <th class="center">Last<br>Price</th>
+                    <th class="center">Redemption<br>Type</th>
+                    <th class="center">Redemption</th>
+                    <th class="center">Carry<br>Earned</th>
+                    <th class="center">Rebate</th>
+                    <th class="center">Hedge</th>
+                    <th class="center">Deal<br>Value</th>
+                    <th class="center">Spread</th>
+                    <th class="center">Gross<br>%</th>
+                    <th class="center">Annual<br>%</th>
+                    <th class="center">Exp<br>Close</th>
+                    <th class="center">Days to<br>Close</th>
+                    <th class="center">Principal</th>
+                    <th class="center">Carry</th>
+                    <th class="center">Rebate</th>
+                    <th class="center">Hedge</th>
+                    <th class="center">Total</th>
+                    <th class="center">"DAY-OF"<br>BREAK</th>
+                  </tr>
+                </thead>
+                <tbody id="scenario_with_hedge_table_tbody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="table-responsive">
+              <table id="scenario_comment_table" class="table table-hover table-bordered compact delete_row_class">
+                <thead>
+                  <tr class="thead-light">
+                    <th colspan="2" class="center">SCENARIO COMMENTS</th>
+                  </tr>
+                </thead>
+                <tbody id="scenario_comment_table_tbody"></tbody>
+              </table>
+            </div>
+            <input id='addScenarioRowInBothTables' type="submit" class="btn btn-primary" value="Add row">&nbsp;
+            <input id='deleteScenarioRowInBothTables' type="submit" class="btn btn-primary" value="Delete Selected Row">
+          </div>
+
+          <br>
+          <div class="row">
+            <div class="container">
+              <div class="col-lg-12 col-md-12 col-sm-12 text-center">
+                <input id='save_credit_button' type="submit" class="btn btn-outline-primary"
+                  value="Save Credit Changes">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+<script src="{% static 'app-assets/vendors/js/vendors.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'app-assets/js/core/view_credit_idea.js' %}" type="text/javascript"></script>
+<script src="{% static 'app-assets/js/core/credit_idea_credit_tab.js' %}" type="text/javascript"></script>
+
+
+{% endblock %}
