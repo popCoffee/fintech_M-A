@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title_block %}
+    ESS CIX Downsides
+{% endblock %}
+{% load staticfiles %}
+
+{% block css_styles %}
+    {{ block.super }}
+
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap.min.css">
+
+{% endblock %}
+
+{% block datatables_bootstrap_css %}
+    {{ block.super }}
+{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+    {# Show a Button to Add a new Deal#}
+    <div class="app-content content">
+        <div class="content-wrapper">
+            <div class="content-header row">
+            </div>
+            <div id="ess_cix_downsides_content_wrapper" class="content-body">
+                <section class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-head">
+                                <div class="card-header">
+                                    <h4 class="card-title font-medium-3 center">Add/Update CIX Downsides</h4>
+                                </div>
+                            </div>
+
+                            <div class="card-content">
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id='ess_cix_downside_table'
+                                           style="font-size:12px;">
+                                        <thead>
+                                        <tr>
+                                            <th>TradeGroup</th>
+                                            <th>Alpha</th>
+                                            <th>CIX Ticker</th>
+                                            <th>Fundamental Downsides</th>
+                                            <th>CIX Downside</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for row in ess_cix_downside_df %}
+                                            <tr>
+                                                <td>X</td>
+                                                <td>Y</td>
+                                                <td>Z</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-success"
+                                                            id="save_button_{{ row.id }}">Save
+                                                    </button>
+                                                </td>
+                                            </tr>
+
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'app-assets/vendors/js/vendors.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'app-assets/js/core/ess_cix_downside.js' %}" type="text/javascript"></script>
+
+
+{% endblock %}
