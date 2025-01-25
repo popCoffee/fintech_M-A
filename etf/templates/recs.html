@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% block title_block %}
+    ARB ETF RECs
+{% endblock %}
+{% load staticfiles %}
+
+{% block css_styles %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.datatables.net/fixedcolumns/3.2.6/css/fixedColumns.bootstrap.min.css">
+{% endblock %}
+
+{% block datatables_bootstrap_css %}
+    {{ block.super }}
+{% endblock %}
+
+{% block content %}
+    <div class="app-content content">
+        {% csrf_token %}
+        <div class="content-wrapper">
+            <div class="content-header row">
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <div class="card-header">
+                        <h4 class="card-title font-medium-3 center">ARBETF - WIMARBH Holdings REC</h4>
+                        <a class="heading-elements-toggle"><i class="ft-ellipsis-h font-medium-3"></i></a>
+                        <div class="heading-elements">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <form method="GET">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="col-xl-8 col-lg-8 col-md-4 col-sm-12 block-tag text-left">
+                                    <small class="badge badge-default badge-success">Select Date
+                                    </small>
+                                </div>
+                                <div class="col-xl-8 col-lg-8 col-md-4 col-sm-12">
+                                    <fieldset class="form-group">
+                                        <input type="date" class="form-control" name="as_of_date"
+                                               value="{{ latest_date }}"/>
+                                    </fieldset>
+                                </div>
+                                <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
+                                    <fieldset class="form-group">
+                                        <button type="submit" class="btn btn-info">Submit
+                                        </button>
+                                    </fieldset>
+                                </div>
+                                <p style="float: left" class="lead h6 text-center font-size-small">As of
+                                    <mark>{{ latest_date }} (Start of Day)</mark>
+                                </p>
+                            </div>
+                            <div class="col-lg-6">
+                                {# Place the Summary Table here#}
+                                <div class="col-sm-12">
+                                    <div class="table-responsive">
+                                        <!-- Task List table -->
+                                        <table class="table table-sm table-bordered table-hover" id='summary_table'>
+                                            <thead>
+                                            <th></th>
+                                            <th>Index Weight</th>
+                                            <th>Weight Tracked</th>
+                                            <th>% Tracked</th>
+                                            <th>Additional ETF Exposure</th>
+                                            </thead>
+                                            <tbody>
+                                            <tr>
+                                                <td>Longs</td>
+                                                <td>{{ summary_object.index_weights_long }}</td>
+                                                <td>{{ summary_object.weight_tracked_long }}</td>
+                                                <td>{{ summary_object.pct_tracked_long }}</td>
+                                                <td>{{ summary_object.additional_etf_exposure_long }}</td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>Shorts</td>
+                                                <td>{{ summary_object.index_weights_short }}</td>
+                                                <td>{{ summary_object.weight_tracked_short }}</td>
+                                                <td>{{ summary_object.pct_tracked_short }}</td>
+                                                <td>{{ summary_object.additional_etf_exposure_short }}</td>
+                                            </tr>
+
+                                             <tr>
+                                                <td>Forwards</td>
+                                                <td>{{ summary_object.index_weights_forwards }}</td>
+                                                <td>{{ summary_object.weight_tracked_forwards }}</td>
+                                                <td>{{ summary_object.pct_tracked_forwards }}</td>
+                                                <td>{{ summary_object.additional_etf_exposure_forwards }}</td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>Gross</td>
+                                                <td>{{ summary_object.index_weights_gross }}</td>
+                                                <td>{{ summary_object.weight_tracked_gross }}</td>
+                                                <td>{{ summary_object.pct_tracked_gross }}</td>
+                                                <td>{{ summary_object.additional_etf_exposure_gross }}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+
+                    {% if not data_found %}
+                        <div class="row">
+                            <div class="col-xl-3 col-lg-3 col-md-3 col-sm-0"></div>
+                            <div class="col-xl-6 col-lg-6 col-md-6 col-xs-12 col-12 alert alert-info alert-dismissible fade show text-center"
+                                 role="alert">
+                                No data found for the selected date.
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="col-xl-3 col-lg-3 col-md-3 col-sm-0"></div>
+                        </div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover" id="recs_table">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center align-middle">DATE</th>
+                                        <th class="text-center align-middle">SEDOL</th>
+                                        <th class="text-center align-middle">EZE TICKER</th>
+                                        <th class="text-center align-middle">DEAL</th>
+                                        <th class="text-center align-middle">BASKET %</th>
+                                        <th class="text-center align-middle">INDEX %</th>
+                                        <th class="text-center align-middle">ETF %</th>
+                                        <th class="text-center align-middle bg-yellow">ETF vs INDEX</th>
+                                        <th class="text-center align-middle">WEIGHT TRACKED %</th>
+                                        <th class="text-center align-middle">PCT TRACKED</th>
+                                        <th class="text-center align-middle">Addn ETF Exp %</th>
+                                        <th class="text-center align-middle">NOTES</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for k,v in  recs_df.items %}
+                                        <tr>
+                                            <td>{{ v.date }}</td>
+                                            <td>{{ v.sedol }}</td>
+                                            <td>{{ v.eze_ticker }}</td>
+                                            <td>{{ v.deal }}</td>
+                                            <td>{{ v.basket|default_if_none:'' }}</td>
+                                            <td>{{ v.index|default_if_none:'' }}</td>
+                                            <td>{{ v.eze|default_if_none:'' }}</td>
+                                            <td>{{ v.index_eze|default_if_none:'' }}</td>
+                                            <td>{{ v.weight_tracked|default_if_none:'' }}</td>
+                                            <td>{{ v.pct_tracked|default_if_none:'' }}</td>
+                                            <td>{{ v.additional_etf_exposure|default_if_none:'' }}</td>
+                                            <td>
+                                                <div class="tooltip_custom">
+                                                    <textarea>{{ v.notes|default_if_none:'' }}</textarea>
+                                                </div>
+                                                <button class="btn btn-sm btn-success saveRecsNoteButton"
+                                                        id='recs_save_note_{{ k }}'>
+                                                    Save Note
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/later/1.2.0/later.js"></script>
+    <script src="{% static 'app-assets/vendors/js/vendors.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'app-assets/js/core/etfrecs.js' %}" type="text/javascript"></script>
+
+
+{% endblock %}
