@@ -1,6 +1,6 @@
-#include <fintech_library.h>
-#include <EuropeanOption/BinomialEuropeanOption.h>
-#include <EuropeanOption/BSEuropeanOption.h>
+// #include <additional_library.h>
+// include the BinomialEuropeanOption
+// include the BSEuropeanOption 
 static double PriceBinomialEuropeanOption(const EuropeanOption::PricingModelParameters& parameters, OptionType type) {
     double result = 0;
     switch (type) {
